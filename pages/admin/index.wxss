@@ -1,0 +1,329 @@
+/* pages/admin/index.wxss */
+.container {
+  min-height: 100vh;
+  background-color: #F5F7FA;
+  padding-bottom: 40rpx;
+}
+
+/* ==================== Tab切换 ==================== */
+.tab-bar {
+  display: flex;
+  background-color: #fff;
+  padding: 20rpx 40rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  color: #666;
+  border-radius: 40rpx;
+  transition: all 0.3s;
+}
+
+.tab-item.active {
+  background-color: #1A56A0;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* ==================== 文件管理 ==================== */
+.tab-content {
+  padding: 20rpx;
+}
+
+.search-box {
+  background-color: #fff;
+  border-radius: 8rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.search-input {
+  background-color: #F5F7FA;
+  border-radius: 8rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+}
+
+/* ==================== 批量操作工具栏 ==================== */
+.batch-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 8rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.batch-mode-btn {
+  padding: 16rpx 32rpx;
+  background-color: #1A56A0;
+  color: #fff;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+}
+
+.clean-btn {
+  padding: 16rpx 32rpx;
+  background-color: #FA8C16;
+  color: #fff;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+}
+
+.select-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 24rpx;
+  border: 2rpx solid #D9D9D9;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.batch-delete-btn {
+  padding: 16rpx 32rpx;
+  background-color: #FF4D4F;
+  color: #fff;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+}
+
+/* ==================== 复选框样式 ==================== */
+.checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40rpx;
+  height: 40rpx;
+  border: 2rpx solid #D9D9D9;
+  border-radius: 6rpx;
+  background-color: #fff;
+  transition: all 0.3s;
+}
+
+.checkbox.checked {
+  background-color: #1A56A0;
+  border-color: #1A56A0;
+}
+
+.checkmark {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.checkbox-wrapper {
+  padding: 0 20rpx;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ==================== 上传记录列表 ==================== */
+.upload-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.upload-card {
+  background-color: #fff;
+  border-radius: 8rpx;
+  padding: 30rpx 30rpx 30rpx 20rpx;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+/* 选中状态 */
+.upload-card.selected {
+  background-color: #E6F7FF;
+  border: 2rpx solid #1A56A0;
+}
+
+/* 左侧竖条 */
+.upload-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8rpx;
+}
+
+.upload-card.status-success::before {
+  background-color: #52C41A;
+}
+
+.upload-card.status-failed::before {
+  background-color: #FF4D4F;
+}
+
+.upload-card.status-parsing::before {
+  background-color: #FA8C16;
+}
+
+/* 批量模式下可点击的卡片内容 */
+.card-clickable {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* 非批量模式下的卡片内容 */
+.card-content-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* 复选框占位符（批量模式下非success状态） */
+.checkbox-placeholder {
+  width: 60rpx;
+  flex-shrink: 0;
+}
+
+.card-left {
+  flex: 1;
+  padding-left: 20rpx;
+  min-width: 0;
+}
+
+.industry-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.info-row {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+  word-break: break-all;
+}
+
+.info-row .label {
+  color: #999;
+}
+
+.status-tag {
+  display: inline-block;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  margin-top: 16rpx;
+}
+
+.status-tag.status-success {
+  background-color: rgba(82, 196, 26, 0.1);
+  color: #52C41A;
+}
+
+.status-tag.status-failed {
+  background-color: rgba(255, 77, 79, 0.1);
+  color: #FF4D4F;
+}
+
+.status-tag.status-parsing {
+  background-color: rgba(250, 140, 22, 0.1);
+  color: #FA8C16;
+}
+
+.card-right {
+  margin-left: 20rpx;
+}
+
+.delete-btn {
+  padding: 16rpx 32rpx;
+  border: 2rpx solid #FF4D4F;
+  border-radius: 8rpx;
+  color: #FF4D4F;
+  font-size: 26rpx;
+}
+
+.empty-state,
+.loading-state {
+  text-align: center;
+  padding: 100rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* ==================== 用户管理 ==================== */
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.user-card {
+  background-color: #fff;
+  border-radius: 8rpx;
+  padding: 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.openid {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+  font-family: monospace;
+}
+
+.role-tag {
+  display: inline-block;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+}
+
+.role-tag.role-admin {
+  background-color: rgba(26, 86, 160, 0.1);
+  color: #1A56A0;
+}
+
+.role-tag.role-viewer {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #666;
+}
+
+.toggle-btn {
+  padding: 16rpx 32rpx;
+  border: 2rpx solid #D9D9D9;
+  border-radius: 8rpx;
+  color: #666;
+  font-size: 26rpx;
+}
+
+.user-count {
+  text-align: center;
+  padding: 40rpx 0;
+  color: #999;
+  font-size: 26rpx;
+}

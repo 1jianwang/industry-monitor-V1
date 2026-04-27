@@ -1,0 +1,109 @@
+<!--pages/home/index.wxml-->
+<!-- 首页 - 产业列表 -->
+<view class="home-page">
+
+  <!-- 数据统计总览卡片 -->
+  <view class="stats-card">
+    <view class="stats-card-title">
+      <text class="stats-title-text">📊 数据统计总览</text>
+    </view>
+    <view class="stats-grid">
+      <!-- 覆盖产业数 - 蓝色 -->
+      <view class="stat-item stat-blue">
+        <text class="stat-icon">🏭</text>
+        <text class="stat-number">{{summary.totalIndustries || 0}}</text>
+        <text class="stat-label">覆盖产业数</text>
+      </view>
+      <!-- 已上传季度 - 绿色 -->
+      <view class="stat-item stat-teal">
+        <text class="stat-icon">📅</text>
+        <text class="stat-number">{{summary.totalPeriods || 0}}</text>
+        <text class="stat-label">已上传季度</text>
+      </view>
+      <!-- 省级龙头企业 - 橙色 -->
+      <view class="stat-item stat-amber">
+        <text class="stat-icon">🏢</text>
+        <text class="stat-number">{{summary.totalEnterprises || 0}}</text>
+        <text class="stat-label">省级龙头企业</text>
+      </view>
+      <!-- 省级科技项目 - 紫色 -->
+      <view class="stat-item stat-purple">
+        <text class="stat-icon">🔬</text>
+        <text class="stat-number">{{summary.totalProjects || 0}}</text>
+        <text class="stat-label">省级科技项目</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 顶部搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrapper">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索产业名称" value="{{searchKeyword}}" bindinput="onSearchInput"/>
+    </view>
+  </view>
+
+  <!-- 骨架屏加载状态 -->
+  <view class="skeleton-list" wx:if="{{loading}}">
+    <view class="skeleton-card" wx:for="{{[1,2,3]}}" wx:key="*this">
+      <view class="skeleton-bar"></view>
+      <view class="skeleton-content">
+        <view class="skeleton-title"></view>
+        <view class="skeleton-time"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 产业列表 -->
+  <view class="industry-list" wx:if="{{!loading && filteredIndustries.length > 0}}">
+    <view wx:for="{{filteredIndustries}}" wx:key="_id" class="industry-item">
+
+      <!-- 卡片主体：点击跳转最新季度 -->
+      <view class="industry-card" bindtap="goToIndustry" data-name="{{item.name}}" data-period="{{item.latestTime}}">
+        <!-- 产业图标 -->
+        <view class="card-icon-wrapper">
+          <text class="card-icon">🏭</text>
+        </view>
+        <view class="card-content">
+          <text class="card-title">{{item.name}}</text>
+          <text class="card-subtitle">📅 最新：{{item.latestTime || '暂无数据'}}</text>
+        </view>
+        <!-- 右侧展开按钮：阻止冒泡避免触发卡片跳转 -->
+        <view class="card-expand-btn" catchtap="toggleExpand" data-name="{{item.name}}">
+          <text class="expand-icon {{expandedIndustry === item.name ? 'expanded' : ''}}">▼</text>
+        </view>
+      </view>
+
+      <!-- 展开的季度列表：默认隐藏，点击展开按钮后显示 -->
+      <view class="period-list {{expandedIndustry === item.name ? 'period-list-show' : 'period-list-hide'}}">
+        <!-- 有季度数据时显示列表 -->
+        <view wx:if="{{item.periods && item.periods.length > 0}}">
+          <view
+            wx:for="{{item.periods}}"
+            wx:key="value"
+            wx:for-item="period"
+            class="period-item"
+            bindtap="goToPeriod"
+            data-name="{{item.name}}"
+            data-period="{{period.value}}"
+          >
+            <text class="period-icon">📅</text>
+            <text class="period-label">{{period.label}}</text>
+            <text class="period-arrow">›</text>
+          </view>
+        </view>
+        <!-- 没有任何季度数据时 -->
+        <view wx:else class="period-empty">
+          <text>暂无已上传的季度数据</text>
+        </view>
+      </view>
+
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && filteredIndustries.length === 0}}">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">{{searchKeyword ? '未找到相关产业' : '暂无产业数据，请联系管理员上传'}}</text>
+  </view>
+</view>

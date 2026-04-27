@@ -1,0 +1,139 @@
+<!--pages/industry/detail.wxml-->
+<!-- 产业详情页 -->
+
+<!-- WXS 模块：格式化时间显示 -->
+<wxs module="utils">
+  // 将 2026Q1 格式转为 "2026年 第一季度"
+  var formatPeriod = function(period) {
+    if (!period) return '';
+
+    // WXS 不支持正则表达式字面量，使用 getRegExp 和字符串方法
+    var reg = getRegExp('^(\\d{4})Q([1-4])$');
+    var match = reg.exec(period);
+
+    if (!match) return period; // 非标准格式直接显示原文
+
+    var year = match[1];
+    var quarter = match[2];
+    var quarterMap = {
+      '1': '第一季度',
+      '2': '第二季度',
+      '3': '第三季度',
+      '4': '第四季度'
+    };
+
+    return year + '年 ' + quarterMap[quarter];
+  };
+
+  module.exports = {
+    formatPeriod: formatPeriod
+  };
+</wxs>
+
+<view class="detail-page">
+  <!-- 顶部产业名称 -->
+  <view class="detail-header">
+    <view class="industry-title">{{industryName}}</view>
+
+    <!-- 数据统计信息 -->
+    <view class="data-stats">
+      <view class="stat-item">
+        <text class="stat-label">数据季度</text>
+        <text class="stat-value">{{utils.formatPeriod(currentTimePeriod)}}</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-label">数据条数</text>
+        <text class="stat-value">{{totalDataCount}}</text>
+      </view>
+    </view>
+
+    <!-- 时间版本切换 -->
+    <view class="time-selector">
+      <picker mode="selector" range="{{formattedPeriods}}" range-key="label" value="{{currentTimeIndex}}" bindchange="onTimeChange">
+        <view class="picker-display">
+          <text>切换季度</text>
+          <text class="picker-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 导出PDF按钮 -->
+    <view class="export-btn {{exporting ? 'export-btn-disabled' : ''}}" bindtap="exportPDF">
+      <text>{{exporting ? '生成中...' : '📄 导出报告'}}</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 数据内容 -->
+  <view class="detail-content" wx:if="{{!loading && hasData}}">
+    <!-- 三栏切换 -->
+    <view class="column-tabs">
+      <view class="tab-item {{currentColumn === 'international' ? 'active' : ''}}" bindtap="switchColumn" data-column="international">
+        国际
+      </view>
+      <view class="tab-item {{currentColumn === 'national' ? 'active' : ''}}" bindtap="switchColumn" data-column="national">
+        国内
+      </view>
+      <view class="tab-item {{currentColumn === 'provincial' ? 'active' : ''}}" bindtap="switchColumn" data-column="provincial">
+        省级
+      </view>
+    </view>
+
+    <!-- 模块Tab -->
+    <scroll-view class="module-tabs" scroll-x="true">
+      <view class="module-tab {{currentModule === item.key ? 'active' : ''}}"
+            wx:for="{{modules}}"
+            wx:key="key"
+            bindtap="switchModule"
+            data-module="{{item.key}}">
+        {{item.name}}
+      </view>
+    </scroll-view>
+
+    <!-- 数据展示区 -->
+    <view class="data-display">
+      <!-- 市场规模模块：显示图表 -->
+      <view wx:if="{{currentModule === 'market'}}" class="chart-section">
+        <view class="chart-toggle">
+          <text class="{{chartType==='产量'?'active':''}}" bindtap="switchChartType" data-type="产量">产量趋势</text>
+          <text class="{{chartType==='产值'?'active':''}}" bindtap="switchChartType" data-type="产值">产值趋势</text>
+        </view>
+        <ec-canvas id="market-chart" canvas-id="marketChart" ec="{{marketChartEc}}" force-use-old-canvas="{{true}}" style="width: 100%; height: 600rpx; display: block;"></ec-canvas>
+      </view>
+
+      <!-- 龙头企业模块：显示柱状图 -->
+      <view wx:if="{{currentModule === 'enterprises'}}" class="chart-section">
+        <view class="chart-title">企业营收对比</view>
+        <ec-canvas id="enterprise-chart" canvas-id="enterpriseChart" ec="{{enterpriseChartEc}}" force-use-old-canvas="{{true}}" style="width: 100%; height: 600rpx; display: block;"></ec-canvas>
+      </view>
+
+      <!-- 主要矿产分布模块：显示饼图 -->
+      <view wx:if="{{currentModule === 'minerals'}}" class="chart-section">
+        <view class="chart-title">矿产储量分布</view>
+        <ec-canvas id="mineral-chart" canvas-id="mineralChart" ec="{{mineralChartEc}}" force-use-old-canvas="{{true}}" style="width: 100%; height: 600rpx; display: block;"></ec-canvas>
+      </view>
+
+      <!-- 数据卡片列表 -->
+      <!-- 外层循环：每一行数据 -->
+      <view class="data-card" wx:for="{{currentData}}" wx:key="index" wx:for-item="row">
+        <!-- 内层循环：每行的字段 -->
+        <view class="field-row" wx:for="{{row}}" wx:key="key" wx:for-item="field">
+          <text class="field-key">{{field.key}}</text>
+          <text class="field-value">{{field.value || '-'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && !hasData}}">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">该产业暂无数据，请联系管理员上传</text>
+  </view>
+</view>

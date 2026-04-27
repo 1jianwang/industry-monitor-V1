@@ -1,0 +1,245 @@
+<!--pages/admin/index.wxml-->
+
+<!-- WXS 模块：格式化时间和季度显示 -->
+<wxs module="utils">
+  // 格式化时间
+  var formatTime = function(timestamp) {
+    if (!timestamp) return '暂无';
+
+    var date = getDate(timestamp);
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var hour = date.getHours();
+    var minute = date.getMinutes();
+
+    // 补零
+    month = month < 10 ? '0' + month : '' + month;
+    day = day < 10 ? '0' + day : '' + day;
+    hour = hour < 10 ? '0' + hour : '' + hour;
+    minute = minute < 10 ? '0' + minute : '' + minute;
+
+    return year + '-' + month + '-' + day + ' ' + hour + ':' + minute;
+  };
+
+  // 获取上传时间（优先使用 completedAt，其次 createdAt）
+  var getUploadTime = function(item) {
+    return item.completedAt || item.createdAt || null;
+  };
+
+  // 格式化季度显示
+  var formatPeriod = function(period) {
+    if (!period) return '';
+
+    // 匹配标准季度格式：2025Q1
+    var reg = getRegExp('^(\\d{4})Q([1-4])$');
+    var match = reg.exec(period);
+
+    if (!match) return period; // 非标准格式直接显示原文
+
+    var year = match[1];
+    var quarter = match[2];
+    var quarterInfo = {
+      '1': { name: '第一季度', months: '1月-3月' },
+      '2': { name: '第二季度', months: '4月-6月' },
+      '3': { name: '第三季度', months: '7月-9月' },
+      '4': { name: '第四季度', months: '10月-12月' }
+    };
+
+    var info = quarterInfo[quarter];
+    return year + '年' + info.name + '(' + info.months + ')';
+  };
+
+  // 判断是否选中
+  var isSelected = function(selectedIds, id) {
+    for (var i = 0; i < selectedIds.length; i++) {
+      if (selectedIds[i] === id) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  module.exports = {
+    formatTime: formatTime,
+    formatPeriod: formatPeriod,
+    getUploadTime: getUploadTime,
+    isSelected: isSelected
+  };
+</wxs>
+
+<view class="container">
+  <!-- 顶部Tab切换 -->
+  <view class="tab-bar">
+    <view
+      class="tab-item {{currentTab === 0 ? 'active' : ''}}"
+      data-index="0"
+      bindtap="switchTab">
+      文件管理
+    </view>
+    <view
+      class="tab-item {{currentTab === 1 ? 'active' : ''}}"
+      data-index="1"
+      bindtap="switchTab">
+      用户管理
+    </view>
+  </view>
+
+  <!-- 文件管理Tab -->
+  <view class="tab-content" wx:if="{{currentTab === 0}}">
+    <!-- 搜索框 -->
+    <view class="search-box">
+      <input
+        class="search-input"
+        placeholder="搜索产业名称"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput" />
+    </view>
+
+    <!-- 批量操作工具栏 -->
+    <view class="batch-toolbar">
+      <view class="toolbar-left">
+        <view class="batch-mode-btn" bindtap="toggleBatchMode">
+          <text wx:if="{{!batchMode}}">批量操作</text>
+          <text wx:else>取消</text>
+        </view>
+        <!-- 批量模式下显示全选按钮 -->
+        <view wx:if="{{batchMode}}" class="select-all-btn" bindtap="toggleSelectAll">
+          <view class="checkbox {{isAllSelected ? 'checked' : ''}}">
+            <text wx:if="{{isAllSelected}}" class="checkmark">✓</text>
+          </view>
+          <text>全选</text>
+        </view>
+        <!-- 非批量模式下显示清理按钮 -->
+        <view wx:if="{{!batchMode}}" class="clean-btn" bindtap="cleanLegacyData">
+          <text>清理异常数据</text>
+        </view>
+      </view>
+      <!-- 批量模式下显示删除按钮 -->
+      <view wx:if="{{batchMode}}" class="toolbar-right">
+        <view class="batch-delete-btn" bindtap="batchDelete">
+          <text>删除 ({{selectedIds.length}})</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 上传记录列表 -->
+    <view class="upload-list">
+      <view
+        class="upload-card status-{{item.status}} {{batchMode && utils.isSelected(selectedIds, item._id) ? 'selected' : ''}}"
+        wx:for="{{filteredUploadList}}"
+        wx:key="_id">
+
+        <!-- 批量模式下整个卡片可点击 -->
+        <view
+          wx:if="{{batchMode && item.status === 'success'}}"
+          class="card-clickable"
+          bindtap="toggleSelectItem"
+          data-id="{{item._id}}">
+
+          <!-- 复选框 -->
+          <view class="checkbox-wrapper">
+            <view class="checkbox {{utils.isSelected(selectedIds, item._id) ? 'checked' : ''}}">
+              <text wx:if="{{utils.isSelected(selectedIds, item._id)}}" class="checkmark">✓</text>
+            </view>
+          </view>
+
+          <view class="card-left">
+            <view class="industry-name">{{item.industryName}}</view>
+            <view class="info-row">
+              <text class="label">数据时间：</text>
+              <text>{{utils.formatPeriod(item.timePeriod)}}</text>
+            </view>
+            <view class="info-row">
+              <text class="label">上传时间：</text>
+              <text>{{utils.formatTime(utils.getUploadTime(item))}}</text>
+            </view>
+            <view class="status-tag status-{{item.status}}">
+              <text wx:if="{{item.status === 'success'}}">成功</text>
+              <text wx:elif="{{item.status === 'failed'}}">失败</text>
+              <text wx:else>解析中</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 非批量模式下的普通显示 -->
+        <view wx:else class="card-content-wrapper">
+          <!-- 批量模式下但状态不是success，显示复选框占位 -->
+          <view wx:if="{{batchMode}}" class="checkbox-placeholder"></view>
+
+          <view class="card-left">
+            <view class="industry-name">{{item.industryName}}</view>
+            <view class="info-row">
+              <text class="label">数据时间：</text>
+              <text>{{utils.formatPeriod(item.timePeriod)}}</text>
+            </view>
+            <view class="info-row">
+              <text class="label">上传时间：</text>
+              <text>{{utils.formatTime(utils.getUploadTime(item))}}</text>
+            </view>
+            <view class="status-tag status-{{item.status}}">
+              <text wx:if="{{item.status === 'success'}}">成功</text>
+              <text wx:elif="{{item.status === 'failed'}}">失败</text>
+              <text wx:else>解析中</text>
+            </view>
+          </view>
+
+          <!-- 非批量模式下显示单个删除按钮 -->
+          <view
+            class="card-right"
+            wx:if="{{!batchMode && item.status === 'success'}}"
+            catchtap="deleteUpload"
+            data-id="{{item._id}}"
+            data-industry-name="{{item.industryName}}"
+            data-time-period="{{item.timePeriod}}">
+            <view class="delete-btn">
+              删除
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{filteredUploadList.length === 0 && !loading}}">
+        <text>暂无上传记录</text>
+      </view>
+
+      <!-- 加载中 -->
+      <view class="loading-state" wx:if="{{loading}}">
+        <text>加载中...</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 用户管理Tab -->
+  <view class="tab-content" wx:if="{{currentTab === 1}}">
+    <!-- 用户列表 -->
+    <view class="user-list">
+      <view
+        class="user-card"
+        wx:for="{{userList}}"
+        wx:key="_id">
+        <view class="user-info">
+          <view class="openid">{{maskOpenid(item.openid)}}</view>
+          <view class="role-tag role-{{item.role}}">
+            <text wx:if="{{item.role === 'admin'}}">管理员</text>
+            <text wx:else>查阅者</text>
+          </view>
+        </view>
+        <view
+          class="toggle-btn"
+          data-id="{{item._id}}"
+          data-role="{{item.role}}"
+          data-openid="{{item.openid}}"
+          bindtap="toggleUserRole">
+          切换角色
+        </view>
+      </view>
+
+      <!-- 底部统计 -->
+      <view class="user-count">
+        共 {{userList.length}} 名用户
+      </view>
+    </view>
+  </view>
+</view>

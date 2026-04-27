@@ -1,0 +1,92 @@
+<!--pages/upload/index.wxml-->
+<!-- 上传产业数据页面 -->
+<view class="upload-page">
+  <!-- 页面标题 -->
+  <view class="page-title">上传产业数据</view>
+
+  <!-- 产业分类选择区域 -->
+  <view class="form-section">
+    <text class="form-label">产业分类</text>
+    <!-- 产业分类 picker -->
+    <picker range="{{industryCategories}}" value="{{selectedCategoryIndex}}" bindchange="onCategoryChange">
+      <view class="picker-box">
+        <text class="{{selectedCategoryIndex !== -1 ? 'picker-value' : 'picker-placeholder'}}">
+          {{selectedCategory || '请选择产业分类'}}
+        </text>
+        <text class="picker-arrow">▼</text>
+      </view>
+    </picker>
+    <!-- 自定义产业分类输入框（选择「自定义」后显示） -->
+    <view wx:if="{{selectedCategory === '自定义'}}" class="custom-input-wrap">
+      <input class="custom-input" placeholder="请输入自定义产业分类"
+             value="{{customCategory}}"
+             bindinput="onCustomCategoryInput"/>
+    </view>
+  </view>
+
+  <!-- 季度时间选择区域 -->
+  <view class="form-section">
+    <text class="form-label">数据时间</text>
+    <picker range="{{quarterOptions}}" range-key="label" value="{{selectedQuarterIndex}}" bindchange="onQuarterChange">
+      <view class="picker-box">
+        <text class="{{selectedQuarterIndex !== -1 ? 'picker-value' : 'picker-placeholder'}}">
+          {{selectedQuarterIndex !== -1 ? quarterOptions[selectedQuarterIndex].label : '请选择季度'}}
+        </text>
+        <text class="picker-arrow">▼</text>
+      </view>
+    </picker>
+    <!-- 自定义时间输入框（选择「自定义时间」后显示） -->
+    <view wx:if="{{selectedQuarter === 'custom'}}" class="custom-input-wrap">
+      <input class="custom-input" placeholder="如：2025Q2 或 2025年上半年"
+             value="{{customQuarter}}"
+             bindinput="onCustomQuarterInput"/>
+    </view>
+  </view>
+
+  <!-- 文件选择区域 -->
+  <view class="form-section">
+    <view class="section-title">选择Excel文件</view>
+    <view class="file-select-area" bindtap="chooseFile">
+      <view wx:if="{{!selectedFile}}" class="file-placeholder">
+        <text class="icon-upload">📁</text>
+        <text class="placeholder-text">点击选择 .xlsx 文件</text>
+      </view>
+      <view wx:else class="file-selected">
+        <text class="icon-file">📄</text>
+        <text class="file-name">{{selectedFile.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 上传进度条（上传中才显示） -->
+  <view class="progress-section" wx:if="{{uploading}}">
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{uploadProgress}}%"></view>
+    </view>
+    <text class="progress-text">上传中... {{uploadProgress}}%</text>
+  </view>
+
+  <!-- 上传按钮 -->
+  <view class="button-section">
+    <button class="upload-button" bindtap="uploadFile" disabled="{{uploading}}">
+      {{uploading ? '上传中...' : '开始上传'}}
+    </button>
+  </view>
+
+  <!-- 结果区域 -->
+  <view class="result-section" wx:if="{{uploadResult}}">
+    <!-- 成功提示 -->
+    <view class="result-success" wx:if="{{uploadResult.success}}">
+      <text class="result-icon">✓</text>
+      <text class="result-message">上传并解析成功！共解析 {{uploadResult.count}} 条数据</text>
+      <button class="view-data-button" bindtap="viewData">查看数据</button>
+    </view>
+
+    <!-- 失败提示 -->
+    <view class="result-error" wx:else>
+      <text class="result-icon">✗</text>
+      <text class="result-message">上传失败</text>
+      <text class="error-detail">{{uploadResult.error}}</text>
+    </view>
+  </view>
+</view>

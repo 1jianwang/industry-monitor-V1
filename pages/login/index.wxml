@@ -1,0 +1,67 @@
+<!--pages/login/index.wxml-->
+<!-- 登录页面 - 深色科技感风格 -->
+<view class="login-page">
+  <!-- 背景装饰层 -->
+  <view class="bg-decorations">
+    <!-- 四角 L 形边框 -->
+    <view class="corner-border corner-tl"></view>
+    <view class="corner-border corner-tr"></view>
+    <view class="corner-border corner-bl"></view>
+    <view class="corner-border corner-br"></view>
+
+    <!-- 扫描线 -->
+    <view class="scan-line"></view>
+  </view>
+
+  <!-- 顶部状态栏 -->
+  <view class="status-bar">
+    <text class="status-left">SYS</text>
+    <view class="status-right">
+      <text class="version">v2.4.1</text>
+      <view class="status-dot"></view>
+    </view>
+  </view>
+
+  <!-- Logo 区域 - 保留原有结构，新增动画和装饰 -->
+  <view class="logo-container">
+    <view class="logo-icon">
+      <!-- 脉冲环装饰 -->
+      <view class="pulse-ring pulse-ring-1"></view>
+      <view class="pulse-ring pulse-ring-2"></view>
+
+      <!-- 原有图标 - 保持不变 -->
+      <image src="/images/compare-active.png" class="logo-image" mode="aspectFit"></image>
+    </view>
+
+    <!-- 主标题 - 保留原文 -->
+    <text class="logo-text">产业创新监测</text>
+
+    <!-- 英文副标题 - 新增 -->
+    <text class="logo-subtitle">INDUSTRY INNOVATION MONITOR</text>
+
+    <!-- 数据标签行 - 新增 -->
+    <view class="data-tags">
+      <text class="tag">实时数据</text>
+      <text class="tag-divider">·</text>
+      <text class="tag">AI 分析</text>
+      <text class="tag-divider">·</text>
+      <text class="tag">趋势预测</text>
+    </view>
+  </view>
+
+  <!-- 登录按钮区域 - 保留原有逻辑 -->
+  <view class="button-container">
+    <button
+      class="login-btn"
+      open-type="getUserInfo"
+      bindgetuserinfo="handleGetUserInfo"
+    >
+      微信授权登录
+    </button>
+  </view>
+
+  <!-- 底部提示 - 保留原有内容 -->
+  <view class="footer-tip">
+    <text>仅限内部人员使用</text>
+  </view>
+</view>

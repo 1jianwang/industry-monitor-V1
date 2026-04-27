@@ -1,0 +1,10 @@
+{
+  "name": "exportPDF",
+  "version": "1.0.0",
+  "description": "导出产业数据PDF报告云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "pdfmake": "^0.2.7"
+  }
+}

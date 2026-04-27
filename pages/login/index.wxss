@@ -1,0 +1,345 @@
+/* pages/login/index.wxss */
+/* 登录页面样式 - 深色科技感风格 */
+
+/* ==================== 覆盖全局样式 ==================== */
+page {
+  background: #071028 !important;
+  min-height: 100%;
+}
+
+/* ==================== 页面容器 ==================== */
+.login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+
+  /* 深色渐变背景 - 先写纯色兜底 */
+  background: #071028;
+  background-image: linear-gradient(to bottom right, #0d1635, #071028, #0a1a3a);
+
+  /* 网格底纹 */
+  background-image:
+    linear-gradient(rgba(59,130,246,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.08) 1px, transparent 1px);
+  background-size: 40rpx 40rpx;
+}
+
+/* ==================== 背景装饰层 ==================== */
+.bg-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 四角 L 形边框 */
+.corner-border {
+  position: absolute;
+  width: 40rpx;
+  height: 40rpx;
+  border-color: #3b82f6;
+  border-style: solid;
+}
+
+.corner-tl {
+  top: 30rpx;
+  left: 30rpx;
+  border-width: 2rpx 0 0 2rpx;
+}
+
+.corner-tr {
+  top: 30rpx;
+  right: 30rpx;
+  border-width: 2rpx 2rpx 0 0;
+}
+
+.corner-bl {
+  bottom: 30rpx;
+  left: 30rpx;
+  border-width: 0 0 2rpx 2rpx;
+}
+
+.corner-br {
+  bottom: 30rpx;
+  right: 30rpx;
+  border-width: 0 2rpx 2rpx 0;
+}
+
+/* 扫描线动画 */
+.scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2rpx;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    #3b82f6 50%,
+    transparent 100%);
+  box-shadow: 0 0 20rpx #3b82f6;
+  animation: scan 4s ease-in-out infinite;
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+/* ==================== 顶部状态栏 ==================== */
+.status-bar {
+  position: absolute;
+  top: 60rpx;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40rpx;
+  z-index: 10;
+  animation: fadeup 0.8s ease-out;
+}
+
+.status-left {
+  font-family: 'Courier New', Consolas, monospace;
+  font-size: 22rpx;
+  color: #64748b;
+  letter-spacing: 6rpx;
+  font-weight: 600;
+}
+
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.version {
+  font-family: 'Courier New', Consolas, monospace;
+  font-size: 22rpx;
+  color: #64748b;
+  letter-spacing: 2rpx;
+}
+
+.status-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 16rpx #22c55e;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.85);
+  }
+}
+
+/* ==================== Logo 区域 ==================== */
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 35vh;
+  z-index: 5;
+  animation: fadeup 0.8s ease-out;
+}
+
+/* Logo 图标容器 */
+.logo-icon {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  border: 4rpx solid rgba(59, 130, 246, 0.45);
+  margin-bottom: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: float 3.5s ease-in-out infinite;
+}
+
+/* 浮动动画 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-16rpx);
+  }
+}
+
+/* 脉冲环 */
+.pulse-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2rpx solid #3b82f6;
+  animation: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.pulse-ring-2 {
+  animation-delay: 1.2s;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Logo 图片 */
+.logo-image {
+  width: 120rpx;
+  height: 120rpx;
+  z-index: 1;
+}
+
+/* 主标题 */
+.logo-text {
+  font-size: 44rpx;
+  font-weight: bold;
+  color: #e2e8f0;
+  letter-spacing: 8rpx;
+  margin-bottom: 16rpx;
+}
+
+/* 英文副标题 - 新增 */
+.logo-subtitle {
+  font-size: 18rpx;
+  color: rgba(148, 163, 184, 0.45);
+  letter-spacing: 4rpx;
+  font-family: 'Arial', sans-serif;
+  margin-bottom: 40rpx;
+}
+
+/* 数据标签行 - 新增 */
+.data-tags {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 8rpx;
+}
+
+.tag {
+  padding: 6rpx 20rpx;
+  border-radius: 6rpx;
+  font-size: 18rpx;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1rpx solid rgba(59, 130, 246, 0.3);
+}
+
+.tag-divider {
+  font-size: 18rpx;
+  color: rgba(148, 163, 184, 0.3);
+}
+
+/* ==================== 按钮容器 ==================== */
+.button-container {
+  position: absolute;
+  bottom: 180rpx;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 5;
+  animation: fadeup 0.8s ease-out 0.3s backwards;
+}
+
+/* 登录按钮样式 */
+.login-btn {
+  width: 70%;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 600;
+  letter-spacing: 4rpx;
+  border-radius: 16rpx;
+  border: none;
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.35);
+  transition: all 0.3s ease;
+
+  /* 重置小程序默认样式 */
+  padding: 0;
+  margin: 0;
+}
+
+/* 重置 button::after 伪元素边框 */
+.login-btn::after {
+  border: none;
+}
+
+/* 按钮点击时的样式 */
+.login-btn:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+  box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.25);
+}
+
+/* ==================== 底部提示文字 ==================== */
+.footer-tip {
+  position: absolute;
+  bottom: 80rpx;
+  z-index: 5;
+  animation: fadeup 0.8s ease-out 0.3s backwards;
+}
+
+.footer-tip text {
+  font-size: 24rpx;
+  color: rgba(148, 163, 184, 0.45);
+  letter-spacing: 2rpx;
+}
+
+/* ==================== 入场动画 ==================== */
+@keyframes fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(24rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== 兼容性说明 ==================== */
+/*
+ * 1. vh 单位：微信小程序完全支持 vh 单位，无需特殊处理
+ * 2. button 默认样式：已通过 border: none 和 ::after { border: none } 重置
+ * 3. 动画性能：使用 transform 和 opacity 保证流畅性
+ * 4. 字体：monospace 在小程序中会回退到系统等宽字体
+ * 5. backdrop-filter：小程序不支持，已避免使用
+ */
