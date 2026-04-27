@@ -1,5 +1,8 @@
 // pages/industry/detail.js
 Page({
+  // 图表实例存储（不放在 data 中，避免序列化导致循环引用错误）
+  chartInstances: {},
+
   data: {
     industryName: '',
     timePeriods: [],
@@ -38,15 +41,18 @@ Page({
     isSwitching: false,
     // 图表相关
     chartType: '产量', // 市场规模图表切换：产量/产值
+    marketChartTitle: '市场规模',  // 市场规模图表标题（动态）
     marketChartEc: {
       lazyLoad: true
     },
     enterpriseChartEc: {
       lazyLoad: true
     },
+    enterpriseChartTitle: '龙头企业',  // 龙头企业图表标题（动态）
     mineralChartEc: {
       lazyLoad: true
     },
+    mineralChartTitle: '矿产储量分布',  // 矿产图表标题（动态）
     // 导出PDF相关
     exporting: false,  // 导出中状态
     // 已修复：TC27 - 图表实例存储，用于页面卸载时销毁
@@ -576,6 +582,10 @@ Page({
       };
     });
 
+    // 数据验证：限制产品数量和年份数量，防止图表拥挤
+    const MAX_PRODUCTS = 8;  // 最多显示 8 个产品系列
+    const MAX_YEARS = 15;    // 最多显示 15 个年份
+
     if (!yearList || yearList.length === 0) {
       console.log('市场规模图表：无有效年份数据，跳过渲染');
       return;
@@ -585,7 +595,40 @@ Page({
       return;
     }
 
-    console.log('市场规模图表数据:', { yearList, series });
+    // 限制产品数量：按数据总和排序，取前 N 个
+    let limitedSeries = series;
+    if (series.length > MAX_PRODUCTS) {
+      // 计算每个产品的数据总和
+      const seriesWithSum = series.map(s => ({
+        ...s,
+        sum: s.data.reduce((acc, val) => acc + val, 0)
+      }));
+      // 按总和降序排序，取前 MAX_PRODUCTS 个
+      limitedSeries = seriesWithSum
+        .sort((a, b) => b.sum - a.sum)
+        .slice(0, MAX_PRODUCTS)
+        .map(({ sum, ...rest }) => rest);  // 移除临时的 sum 字段
+
+      console.log(`市场规模图表：产品过多，仅显示数据量最大的前 ${MAX_PRODUCTS} 个产品（共 ${series.length} 个）`);
+    }
+
+    // 限制年份数量：取最近的 N 年
+    let limitedYearList = yearList;
+    if (yearList.length > MAX_YEARS) {
+      limitedYearList = yearList.slice(-MAX_YEARS);  // 取最后 N 个年份（最近的）
+      // 更新系列数据，只保留对应年份的数据
+      limitedSeries = limitedSeries.map(s => ({
+        ...s,
+        data: limitedYearList.map(year => {
+          const yearIndex = yearList.indexOf(year);
+          return s.data[yearIndex] || 0;
+        })
+      }));
+
+      console.log(`市场规模图表：年份过多，仅显示最近 ${MAX_YEARS} 年（共 ${yearList.length} 年）`);
+    }
+
+    console.log('市场规模图表数据:', { yearList: limitedYearList, series: limitedSeries });
 
     // 设置图表配置
     this.setData({
@@ -598,9 +641,9 @@ Page({
           console.log('echarts版本:', echarts.version);
 
           // 已修复：TC27 - 销毁旧的图表实例，避免内存泄漏
-          if (this.data.chartInstances.market) {
+          if (this.chartInstances.market) {
             try {
-              this.data.chartInstances.market.dispose();
+              this.chartInstances.market.dispose();
               console.log('已销毁旧的市场规模图表实例');
             } catch (e) {
               console.warn('销毁旧图表实例失败:', e);
@@ -613,8 +656,22 @@ Page({
             devicePixelRatio: dpr
           });
 
-          // 已修复：TC27 - 保存图表实例引用
-          this.data.chartInstances.market = chart;
+          // 已修复：TC27 - 保存图表实例引用（存储到页面实例属性，不放在 data 中）
+          this.chartInstances.market = chart;
+
+          // 设置动态标题
+          let titleText = '市场规模';
+          if (series.length > MAX_PRODUCTS || yearList.length > MAX_YEARS) {
+            const parts = [];
+            if (series.length > MAX_PRODUCTS) {
+              parts.push(`前${MAX_PRODUCTS}个产品`);
+            }
+            if (yearList.length > MAX_YEARS) {
+              parts.push(`最近${MAX_YEARS}年`);
+            }
+            titleText = `市场规模（${parts.join('，')}）`;
+          }
+          this.setData({ marketChartTitle: titleText });
 
           chart.setOption({
             title: {
@@ -652,7 +709,7 @@ Page({
             },
             xAxis: {
               type: 'category',
-              data: yearList,
+              data: limitedYearList,
               axisLabel: {
                 fontSize: 11,
                 color: '#666'
@@ -681,7 +738,7 @@ Page({
                 }
               }
             },
-            series: series
+            series: limitedSeries
           });
 
           return chart;
@@ -762,9 +819,9 @@ Page({
           const echarts = require('../../ec-canvas/echarts.min');
 
           // 已修复：TC27 - 销毁旧的图表实例
-          if (this.data.chartInstances.enterprise) {
+          if (this.chartInstances.enterprise) {
             try {
-              this.data.chartInstances.enterprise.dispose();
+              this.chartInstances.enterprise.dispose();
             } catch (e) {
               console.warn('销毁旧图表实例失败:', e);
             }
@@ -776,8 +833,12 @@ Page({
             devicePixelRatio: dpr
           });
 
-          // 已修复：TC27 - 保存图表实例引用
-          this.data.chartInstances.enterprise = chart;
+          // 已修复：TC27 - 保存图表实例引用（存储到页面实例属性，不放在 data 中）
+          this.chartInstances.enterprise = chart;
+
+          // 设置动态标题
+          const titleText = enterprises.length > 10 ? '龙头企业（前10）' : '龙头企业';
+          this.setData({ enterpriseChartTitle: titleText });
 
           chart.setOption({
             tooltip: {
@@ -944,21 +1005,61 @@ Page({
       return;
     }
 
-    console.log('矿产分布图表数据:', pieData);
+    // 数据验证：限制矿产数量，防止饼图过于拥挤
+    const MAX_MINERALS = 10;  // 最多显示 10 种矿产
+    let limitedPieData = pieData;
+
+    if (pieData.length > MAX_MINERALS) {
+      // 按储量降序排序，取前 MAX_MINERALS 个
+      limitedPieData = pieData
+        .sort((a, b) => b.value - a.value)
+        .slice(0, MAX_MINERALS);
+
+      console.log(`矿产分布图表：矿产种类过多，仅显示储量最大的前 ${MAX_MINERALS} 种（共 ${pieData.length} 种）`);
+    }
+
+    console.log('矿产分布图表数据:', limitedPieData);
+
+    // 动态设置图表标题
+    const chartTitle = limitedPieData.length < pieData.length ? '矿产储量分布（前10）' : '矿产储量分布';
 
     // 设置图表配置
     this.setData({
+      mineralChartTitle: chartTitle,  // 更新标题
       mineralChartEc: {
         lazyLoad: true,
         onInit: (canvas, width, height, dpr) => {
           const echarts = require('../../ec-canvas/echarts.min');
+
+          // 销毁旧的图表实例
+          if (this.chartInstances.mineral) {
+            try {
+              this.chartInstances.mineral.dispose();
+            } catch (e) {
+              console.warn('销毁旧图表实例失败:', e);
+            }
+          }
+
           const chart = echarts.init(canvas, null, {
             width: width,
             height: height,
             devicePixelRatio: dpr
           });
 
+          // 保存图表实例引用（存储到页面实例属性，不放在 data 中）
+          this.chartInstances.mineral = chart;
+
           chart.setOption({
+            title: {
+              text: limitedPieData.length < pieData.length ? '主要矿产分布（前10）' : '主要矿产分布',
+              left: 'center',
+              top: 10,
+              textStyle: {
+                fontSize: 16,
+                fontWeight: 'bold',
+                color: '#1A56A0'
+              }
+            },
             tooltip: {
               trigger: 'item',
               formatter: '{b}: {c} ({d}%)',
@@ -984,7 +1085,7 @@ Page({
               type: 'pie',
               radius: ['40%', '65%'],
               center: ['50%', '45%'],
-              data: pieData,
+              data: limitedPieData,
               label: {
                 fontSize: 11,
                 color: '#666'
@@ -998,7 +1099,7 @@ Page({
                 borderColor: '#fff',
                 borderWidth: 2
               },
-              color: ['#1A56A0', '#2E75B6', '#4A8FD8', '#667eea', '#5B9BD5', '#70AD47', '#FFC000'],
+              color: ['#1A56A0', '#2E75B6', '#4A8FD8', '#667eea', '#5B9BD5', '#70AD47', '#FFC000', '#ED7D31', '#A5A5A5', '#5470C6'],
               emphasis: {
                 itemStyle: {
                   shadowBlur: 10,

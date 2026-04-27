@@ -187,7 +187,7 @@
           <!-- 非批量模式下显示单个删除按钮 -->
           <view
             class="card-right"
-            wx:if="{{!batchMode && item.status === 'success'}}"
+            wx:if="{{!batchMode}}"
             catchtap="deleteUpload"
             data-id="{{item._id}}"
             data-industry-name="{{item.industryName}}"

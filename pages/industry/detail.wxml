@@ -100,6 +100,7 @@
     <view class="data-display">
       <!-- 市场规模模块：显示图表 -->
       <view wx:if="{{currentModule === 'market'}}" class="chart-section">
+        <view class="chart-title">{{marketChartTitle}}</view>
         <view class="chart-toggle">
           <text class="{{chartType==='产量'?'active':''}}" bindtap="switchChartType" data-type="产量">产量趋势</text>
           <text class="{{chartType==='产值'?'active':''}}" bindtap="switchChartType" data-type="产值">产值趋势</text>
@@ -109,13 +110,13 @@
 
       <!-- 龙头企业模块：显示柱状图 -->
       <view wx:if="{{currentModule === 'enterprises'}}" class="chart-section">
-        <view class="chart-title">企业营收对比</view>
+        <view class="chart-title">{{enterpriseChartTitle}}</view>
         <ec-canvas id="enterprise-chart" canvas-id="enterpriseChart" ec="{{enterpriseChartEc}}" force-use-old-canvas="{{true}}" style="width: 100%; height: 600rpx; display: block;"></ec-canvas>
       </view>
 
       <!-- 主要矿产分布模块：显示饼图 -->
       <view wx:if="{{currentModule === 'minerals'}}" class="chart-section">
-        <view class="chart-title">矿产储量分布</view>
+        <view class="chart-title">{{mineralChartTitle}}</view>
         <ec-canvas id="mineral-chart" canvas-id="mineralChart" ec="{{mineralChartEc}}" force-use-old-canvas="{{true}}" style="width: 100%; height: 600rpx; display: block;"></ec-canvas>
       </view>
 
