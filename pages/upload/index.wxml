@@ -4,6 +4,18 @@
   <!-- 页面标题 -->
   <view class="page-title">上传产业数据</view>
 
+  <!-- 模板下载区域 -->
+  <view class="template-section">
+    <view class="template-tip">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">首次使用？请先下载模板文件，按格式填写数据后上传</text>
+    </view>
+    <button class="template-button" bindtap="downloadTemplate">
+      <text class="template-icon">📥</text>
+      <text class="template-text">下载 Excel 模板文件</text>
+    </button>
+  </view>
+
   <!-- 产业分类选择区域 -->
   <view class="form-section">
     <text class="form-label">产业分类</text>
@@ -49,7 +61,7 @@
     <view class="file-select-area" bindtap="chooseFile">
       <view wx:if="{{!selectedFile}}" class="file-placeholder">
         <text class="icon-upload">📁</text>
-        <text class="placeholder-text">点击选择 .xlsx 文件</text>
+        <text class="placeholder-text">{{canSelectFile ? '点击选择 .xlsx 文件' : '请先选择产业分类和数据时间'}}</text>
       </view>
       <view wx:else class="file-selected">
         <text class="icon-file">📄</text>
@@ -68,7 +80,7 @@
 
   <!-- 上传按钮 -->
   <view class="button-section">
-    <button class="upload-button" bindtap="uploadFile" disabled="{{uploading}}">
+    <button class="upload-button" bindtap="uploadFile" disabled="{{uploading || !canUpload}}">
       {{uploading ? '上传中...' : '开始上传'}}
     </button>
   </view>

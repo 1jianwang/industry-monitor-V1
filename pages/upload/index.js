@@ -40,7 +40,14 @@ Page({
 
     // 上传成功后保存的信息（用于查看数据跳转）
     lastUploadIndustry: '',         // 最后上传的产业名称
-    lastUploadPeriod: ''            // 最后上传的时间周期
+    lastUploadPeriod: '',           // 最后上传的时间周期
+
+    // 表单验证状态
+    canSelectFile: false,           // 是否可以选择文件
+    canUpload: false,               // 是否可以上传
+
+    // 模板文件云存储路径（请替换为你上传后的实际路径）
+    templateFileID: 'cloud://cloud1-d2gahyqj8acd9ec22.636c-cloud1-d2gahyqj8acd9ec22-1423027928/templates/XX产业领域创新统计监测体系.xlsx'
   },
 
   /**
@@ -150,6 +157,9 @@ Page({
       selectedCategory: category,
       customCategory: category === '自定义' ? this.data.customCategory : ''
     });
+
+    // 更新表单验证状态
+    this.updateFormValidation();
   },
 
   /**
@@ -159,6 +169,9 @@ Page({
     this.setData({
       customCategory: e.detail.value
     });
+
+    // 更新表单验证状态
+    this.updateFormValidation();
   },
 
   /**
@@ -173,6 +186,9 @@ Page({
       selectedQuarter: quarter.value,
       customQuarter: quarter.value === 'custom' ? this.data.customQuarter : ''
     });
+
+    // 更新表单验证状态
+    this.updateFormValidation();
   },
 
   /**
@@ -182,6 +198,9 @@ Page({
     this.setData({
       customQuarter: e.detail.value
     });
+
+    // 更新表单验证状态
+    this.updateFormValidation();
   },
 
   /**
@@ -213,6 +232,26 @@ Page({
   },
 
   /**
+   * 更新表单验证状态
+   * 检查产业分类和时间是否已填写，决定是否可以选择文件和上传
+   */
+  updateFormValidation: function () {
+    const industryName = this.getFinalIndustryName();
+    const timePeriod = this.getFinalTimePeriod();
+
+    // 产业分类和时间都已填写，才可以选择文件
+    const canSelectFile = !!(industryName && timePeriod);
+
+    // 产业分类、时间、文件都已选择，才可以上传
+    const canUpload = canSelectFile && !!this.data.selectedFile;
+
+    this.setData({
+      canSelectFile: canSelectFile,
+      canUpload: canUpload
+    });
+  },
+
+  /**
    * 页面显示时执行
    * 已修复：TC03 - 每次页面显示时重新从云端验证角色，不依赖缓存
    */
@@ -232,7 +271,7 @@ Page({
   /**
    * 已修复：TC03 - 验证管理员角色（从云端获取最新角色）
    */
-  verifyAdminRole: function() {
+  verifyAdminRole: function () {
     request.callCloud('getUserRole', {})
       .then(res => {
         if (res && res.success && res.data) {
@@ -269,6 +308,79 @@ Page({
   },
 
   /**
+   * 下载 Excel 模板文件
+   */
+  downloadTemplate: function () {
+    wx.showLoading({
+      title: '准备下载...',
+      mask: true
+    });
+
+    // 方式一：如果模板文件已上传到云存储
+    const templateFileID = this.data.templateFileID;
+
+    // 检查是否配置了模板文件路径
+    if (!templateFileID || templateFileID.includes('your-env-id')) {
+      wx.hideLoading();
+      wx.showModal({
+        title: '模板未配置',
+        content: '请先将模板文件上传到云存储，并在代码中配置 templateFileID。\n\n上传步骤：\n1. 打开微信开发者工具\n2. 云开发 → 存储\n3. 创建 templates 文件夹\n4. 上传模板文件\n5. 复制文件 ID 到代码中',
+        showCancel: false,
+        confirmText: '我知道了'
+      });
+      return;
+    }
+
+    // 从云存储下载模板文件
+    wx.cloud.downloadFile({
+      fileID: templateFileID,
+      success: (res) => {
+        wx.hideLoading();
+
+        if (res.statusCode === 200) {
+          const tempFilePath = res.tempFilePath;
+
+          // 打开文件预览
+          wx.openDocument({
+            filePath: tempFilePath,
+            fileType: 'xlsx',
+            showMenu: true, // 显示右上角菜单，用户可以转发或保存到本地
+            success: () => {
+              wx.showToast({
+                title: '模板已打开',
+                icon: 'success',
+                duration: 2000
+              });
+            },
+            fail: (err) => {
+              console.error('打开文件失败:', err);
+              wx.showModal({
+                title: '打开失败',
+                content: '无法打开模板文件，请确保已安装 WPS 或其他 Office 应用',
+                showCancel: false
+              });
+            }
+          });
+        } else {
+          wx.showToast({
+            title: '下载失败，请重试',
+            icon: 'none'
+          });
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        console.error('下载模板失败:', err);
+        wx.showModal({
+          title: '下载失败',
+          content: '模板文件下载失败，请检查网络连接或联系管理员',
+          showCancel: false
+        });
+      }
+    });
+  },
+
+  /**
    * 选择文件按钮点击事件
    * 使用 wx.chooseMessageFile 选择微信聊天中的文件（Excel）
    */
@@ -282,6 +394,16 @@ Page({
       return;
     }
 
+    // 检查是否已填写产业分类和时间
+    if (!this.data.canSelectFile) {
+      wx.showToast({
+        title: '请先选择产业分类和数据时间',
+        icon: 'none',
+        duration: 2000
+      });
+      return;
+    }
+
     wx.chooseMessageFile({
       count: 1,          // 最多选择 1 个文件
       type: 'file',      // 选择文件类型
@@ -290,22 +412,47 @@ Page({
         const file = res.tempFiles[0];
         const fileName = file.name;
 
-        // 校验文件扩展名
-        if (!fileName.endsWith('.xlsx')) {
+        // 严格校验文件扩展名（不区分大小写）
+        if (!fileName.toLowerCase().endsWith('.xlsx')) {
           wx.showToast({
-            title: '请选择 .xlsx 格式的Excel文件',
-            icon: 'none'
+            title: '仅支持 .xlsx 格式（Excel 2007+）',
+            icon: 'none',
+            duration: 3000
           });
           return;
         }
 
-        console.log('选择的文件：', fileName);
+        // 校验文件大小（限制 10MB）
+        if (file.size > 10 * 1024 * 1024) {
+          wx.showToast({
+            title: '文件过大，请上传小于 10MB 的文件',
+            icon: 'none',
+            duration: 3000
+          });
+          return;
+        }
+
+        // 校验文件大小不为 0
+        if (file.size === 0) {
+          wx.showToast({
+            title: '文件为空，请检查文件是否损坏',
+            icon: 'none',
+            duration: 3000
+          });
+          return;
+        }
+
+        console.log('选择的文件：', fileName, '大小：', (file.size / 1024).toFixed(2) + 'KB');
         this.setData({
           selectedFile: {
             name: fileName,
-            path: file.path
+            path: file.path,
+            size: file.size
           }
         });
+
+        // 更新表单验证状态
+        this.updateFormValidation();
       },
       fail: (err) => {
         console.error('选择文件失败', err);
@@ -320,7 +467,7 @@ Page({
   /**
    * 已修复：TC14 - 净化函数：移除云存储路径不支持的特殊字符
    */
-  sanitizeForPath: function(str) {
+  sanitizeForPath: function (str) {
     return String(str)
       .replace(/[\/\\:*?"<>|&=]/g, '_')  // 替换特殊字符为下划线
       .replace(/\s+/g, '_')               // 空格替换为下划线
@@ -402,8 +549,29 @@ Page({
     // 已修复：TC14 - 使用净化后的名称构建云存储路径
     const safeName = this.sanitizeForPath(industryName);
     const safePeriod = this.sanitizeForPath(timePeriod);
-    const safeFileName = file.name.replace(/[\/\\:*?"<>|]/g, '_');
+    let safeFileName = file.name.replace(/[\/\\:*?"<>|]/g, '_');
+
+    // 限制文件名长度（保留扩展名）
+    const maxFileNameLength = 100;
+    if (safeFileName.length > maxFileNameLength) {
+      const ext = safeFileName.substring(safeFileName.lastIndexOf('.'));
+      const nameWithoutExt = safeFileName.substring(0, safeFileName.lastIndexOf('.'));
+      safeFileName = nameWithoutExt.substring(0, maxFileNameLength - ext.length) + ext;
+      console.log('文件名过长，已截断为：', safeFileName);
+    }
+
     const cloudPath = `uploads/${safeName}/${safePeriod}/${Date.now()}_${safeFileName}`;
+
+    // 校验最终路径长度
+    if (cloudPath.length > 1000) {
+      wx.showToast({
+        title: '文件路径过长，请简化产业名称或时间',
+        icon: 'none',
+        duration: 3000
+      });
+      this.setData({ uploading: false });
+      return;
+    }
 
     wx.cloud.uploadFile({
       cloudPath: cloudPath,
@@ -455,18 +623,26 @@ Page({
                 selectedQuarter: '',
                 customQuarter: ''
               });
+
+              // 更新表单验证状态
+              this.updateFormValidation();
             } else {
-              // 解析失败
+              // 解析失败 - 显示详细错误信息
+              const errorMsg = parseRes.error || '解析失败';
+
               this.setData({
                 uploadResult: {
                   success: false,
-                  error: parseRes.error || '解析失败'
+                  error: errorMsg
                 }
               });
 
-              wx.showToast({
-                title: '解析失败',
-                icon: 'none'
+              // 使用 Modal 显示详细错误，方便用户查看
+              wx.showModal({
+                title: '上传失败',
+                content: errorMsg,
+                showCancel: false,
+                confirmText: '我知道了'
               });
             }
           })

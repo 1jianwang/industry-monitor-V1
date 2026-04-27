@@ -197,13 +197,47 @@ exports.main = async (event, context) => {
     // ==========================================
     // 第二步：读取Excel文件为二维数组
     // ==========================================
-    const workbook = XLSX.readFile(tmpFilePath);
+    const workbook = XLSX.readFile(tmpFilePath, {
+      cellDates: true,      // 将日期单元格解析为 Date 对象
+      cellNF: false,        // 不保留数字格式
+      cellText: false       // 不强制转文本
+    });
+
+    // 校验工作表是否存在
+    if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+      await updateUploadStatus(db, uploadId, 'failed', 'Excel文件不包含任何工作表');
+      return { success: false, error: 'Excel文件不包含任何工作表' };
+    }
+
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
 
+    // 校验 worksheet 是否存在
+    if (!worksheet) {
+      await updateUploadStatus(db, uploadId, 'failed', 'Excel工作表读取失败');
+      return { success: false, error: 'Excel工作表读取失败' };
+    }
+
     // 转换为二维数组（行索引从0开始）
-    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null });
+    const rows = XLSX.utils.sheet_to_json(worksheet, {
+      header: 1,
+      defval: null,
+      raw: false,           // 不使用原始值，自动格式化
+      dateNF: 'yyyy-mm-dd'  // 日期格式
+    });
     console.log('Excel读取成功，总行数:', rows.length);
+
+    // 校验数据行是否为空
+    if (!rows || rows.length === 0) {
+      await updateUploadStatus(db, uploadId, 'failed', 'Excel文件无数据，请检查文件内容');
+      return { success: false, error: 'Excel文件无数据' };
+    }
+
+    // 进一步校验：至少需要 2 行（1 行模块标题 + 1 行数据）
+    if (rows.length < 2) {
+      await updateUploadStatus(db, uploadId, 'failed', 'Excel文件数据不足，至少需要包含模块标题和数据行');
+      return { success: false, error: 'Excel文件数据不足' };
+    }
 
     if (Date.now() - startTime > TIMEOUT_MS) {
       await updateUploadStatus(db, uploadId, 'failed', '文件过大，解析超时，请拆分后重新上传');
@@ -220,6 +254,15 @@ exports.main = async (event, context) => {
       dataStart: b.dataStartRowIndex + 1,
       dataEnd: b.dataEndRowIndex + 1
     })), null, 2));
+
+    // 如果没有识别到任何模块，返回详细错误信息
+    if (boundaries.length === 0) {
+      await updateUploadStatus(db, uploadId, 'failed', 'Excel文件格式不正确：未识别到任何模块标题。请确保A列包含模块关键词（如"高水平大学"、"龙头企业"等）');
+      return {
+        success: false,
+        error: 'Excel文件格式不正确：未识别到任何模块标题。请检查A列是否包含：高水平大学、顶尖研究机构、领衔科学家、主要矿产、龙头企业、市场规模、高水平论文、产业技术规划、科技创新项目、科技成果奖、国家重大项目等关键词'
+      };
+    }
 
     // ==========================================
     // 第四步：按模块提取数据
@@ -241,6 +284,15 @@ exports.main = async (event, context) => {
         console.error(`模块 ${boundary.moduleName} 解析失败:`, err.message);
         // 单模块失败不影响其他模块
       }
+    }
+
+    // 检查是否提取到任何数据
+    if (allRecords.length === 0) {
+      await updateUploadStatus(db, uploadId, 'failed', '请勿提交空白模板！请在模板中填写实际数据后再上传');
+      return {
+        success: false,
+        error: '请勿提交空白模板！\n\n您上传的文件虽然包含了所有模块标题，但所有数据行都是空的。\n\n请在每个模块下至少填写 1 行真实数据，例如：\n• 高水平大学：填写大学名称、研究领域等\n• 龙头企业：填写企业名称、产品种类等\n\n填写完成后再重新上传。'
+      };
     }
 
     // ==========================================
@@ -435,6 +487,8 @@ function extractModuleData(rows, boundary, industryName, timePeriod) {
     if (isEmptyRow) continue;
 
     let isHeaderRow = false;
+    let headerDebugInfo = [];
+
     Object.entries(fieldConfig).forEach(([level, config]) => {
       const { startCol, fields } = config;
       let matchCount = 0;
@@ -447,6 +501,7 @@ function extractModuleData(rows, boundary, industryName, timePeriod) {
         // 检查单元格值是否包含字段名（表头行特征）
         if (cellValue && fieldName && cellValue.includes(fieldName)) {
           matchCount++;
+          headerDebugInfo.push(`${level}列${startCol + idx}: "${cellValue}" 包含 "${fieldName}"`);
         }
       });
 
@@ -457,7 +512,6 @@ function extractModuleData(rows, boundary, industryName, timePeriod) {
     });
 
     if (isHeaderRow) {
-      console.log(`跳过表头行：第${i + 1}行`);
       continue;
     }
 
@@ -469,9 +523,35 @@ function extractModuleData(rows, boundary, industryName, timePeriod) {
 
       fields.forEach((fieldName, idx) => {
         if (fieldName === '_') return;  // 跳过占位字段
-        const cellValue = String(row[startCol + idx] || '').trim();
-        if (cellValue !== '') {
-          item[fieldName] = cellValue;
+        const rawValue = row[startCol + idx];
+
+        // 跳过 null/undefined
+        if (rawValue === null || rawValue === undefined) return;
+
+        // 处理日期对象
+        if (rawValue instanceof Date) {
+          const year = rawValue.getFullYear();
+          const month = String(rawValue.getMonth() + 1).padStart(2, '0');
+          const day = String(rawValue.getDate()).padStart(2, '0');
+          item[fieldName] = `${year}-${month}-${day}`;
+          hasValue = true;
+          return;
+        }
+
+        // 处理普通值
+        const cellValue = String(rawValue).trim();
+
+        // 过滤 Excel 错误值
+        if (cellValue.startsWith('#') && ['#REF!', '#VALUE!', '#DIV/0!', '#N/A', '#NAME?', '#NULL!', '#NUM!'].includes(cellValue)) {
+          console.warn(`单元格错误值：${cellValue}，行${i+1}，列${startCol+idx+1}`);
+          return;
+        }
+
+        // 移除不可见字符（换行、制表符、全角空格）
+        const cleanValue = cellValue.replace(/[\r\n\t　]/g, '');
+
+        if (cleanValue !== '' && cleanValue.length > 0) {
+          item[fieldName] = cleanValue;
           hasValue = true;
         }
       });
