@@ -31,19 +31,21 @@
 ## 📸 功能截图
 
 ### 登录页面
-![登录页面](screenshots/login.png)
+<img src="screenshots/login.png" alt="登录页面" width="300" />
+
 > 微信授权登录，安全快捷
 
 ### 首页 - 产业列表
-![首页](screenshots/home.png)
+<img src="screenshots/home.png" alt="首页" width="300" />
+
 > 产业数据一览，支持搜索与展开查看
 
 ### 产业详情页 - 数据可视化
 <table>
   <tr>
-    <td><img src="screenshots/detail-1.png" alt="详情页1" /></td>
-    <td><img src="screenshots/detail-2.png" alt="详情页2" /></td>
-    <td><img src="screenshots/detail-3.png" alt="详情页3" /></td>
+    <td><img src="screenshots/detail-1.png" alt="详情页1" width="250" /></td>
+    <td><img src="screenshots/detail-2.png" alt="详情页2" width="250" /></td>
+    <td><img src="screenshots/detail-3.png" alt="详情页3" width="250" /></td>
   </tr>
   <tr>
     <td align="center">数据图表展示</td>
@@ -55,15 +57,18 @@
 > 三个可视化数据页面，提供多维度的产业数据分析
 
 ### 数据上传（管理员）
-![数据上传](screenshots/upload.png)
+<img src="screenshots/upload.png" alt="数据上传" width="300" />
+
 > 支持Excel模板下载与数据上传
 
 ### 管理后台（管理员）
-![管理后台](screenshots/admin.png)
+<img src="screenshots/admin.png" alt="管理后台" width="300" />
+
 > 数据管理与用户权限管理
 
 ### 个人中心
-![个人中心](screenshots/profile.png)
+<img src="screenshots/profile.png" alt="个人中心" width="300" />
+
 > 用户信息与设置
 
 ---
