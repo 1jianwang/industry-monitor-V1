@@ -98,8 +98,11 @@
 ## 📋 测试用例截图
 
 <p align="center">
-  <img src="screenshots/test-case-1.png" alt="测试用例图1" width="45%" style="margin: 10px;" />
-  <img src="screenshots/test-case-2.png" alt="测试用例图2" width="45%" style="margin: 10px;" />
+  <img src="screenshots/test-case-1.png" alt="测试用例图1" width="80%" />
+</p>
+
+<p align="center">
+  <img src="screenshots/test-case-2.png" alt="测试用例图2" width="80%" />
 </p>
 
 <p align="center">
