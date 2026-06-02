@@ -32,15 +32,15 @@
 
 <table>
   <tr>
-    <td align="center">
-      <img src="screenshots/login.png" alt="登录页面" width="280" />
+    <td align="center" width="50%">
+      <img src="screenshots/login.png" alt="登录页面" width="350" />
       <br />
       <b>登录页面</b>
       <br />
       <sub>微信授权登录</sub>
     </td>
-    <td align="center">
-      <img src="screenshots/home.png" alt="首页" width="280" />
+    <td align="center" width="50%">
+      <img src="screenshots/home.png" alt="首页" width="350" />
       <br />
       <b>首页 - 产业列表</b>
       <br />
@@ -49,14 +49,14 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="screenshots/detail-1.png" alt="产业详情1" width="280" />
+      <img src="screenshots/detail-1.png" alt="产业详情1" width="350" />
       <br />
       <b>产业详情 - 图表展示</b>
       <br />
       <sub>数据可视化图表</sub>
     </td>
     <td align="center">
-      <img src="screenshots/detail-2.png" alt="产业详情2" width="280" />
+      <img src="screenshots/detail-2.png" alt="产业详情2" width="350" />
       <br />
       <b>产业详情 - 趋势分析</b>
       <br />
@@ -65,14 +65,14 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="screenshots/detail-3.png" alt="产业详情3" width="280" />
+      <img src="screenshots/detail-3.png" alt="产业详情3" width="350" />
       <br />
       <b>产业详情 - 统计信息</b>
       <br />
       <sub>详细统计数据</sub>
     </td>
     <td align="center">
-      <img src="screenshots/upload.png" alt="数据上传" width="280" />
+      <img src="screenshots/upload.png" alt="数据上传" width="350" />
       <br />
       <b>数据上传（管理员）</b>
       <br />
@@ -81,14 +81,14 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="screenshots/admin.png" alt="管理后台" width="280" />
+      <img src="screenshots/admin.png" alt="管理后台" width="350" />
       <br />
       <b>管理后台（管理员）</b>
       <br />
       <sub>数据管理与删除</sub>
     </td>
     <td align="center">
-      <img src="screenshots/profile.png" alt="个人中心" width="280" />
+      <img src="screenshots/profile.png" alt="个人中心" width="350" />
       <br />
       <b>个人中心</b>
       <br />
