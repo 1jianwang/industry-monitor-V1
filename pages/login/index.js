@@ -15,11 +15,12 @@ Page({
   /**
    * 页面加载时执行
    * 检查是否已登录，若已登录则直接跳转到首页
+   * 改进：增强缓存过期检查逻辑（TC-LOGIN-003, TC-LOGIN-004）
    */
   onLoad: function (options) {
     // 检查全局数据中是否已有 openid（已登录）
     if (app.globalData.openid) {
-      console.log('检测到已登录，跳转到首页');
+      console.log('[登录检查] 检测到已登录，跳转到首页');
       wx.redirectTo({
         url: '/pages/home/index'
       });
@@ -27,17 +28,38 @@ Page({
     }
 
     // 尝试从本地缓存读取登录状态（实现免登录）
-    const cachedOpenid = wx.getStorageSync('openid');
-    const cachedRole = wx.getStorageSync('role');
+    try {
+      const expire = wx.getStorageSync('loginExpire');
+      const cachedOpenid = wx.getStorageSync('openid');
+      const cachedRole = wx.getStorageSync('role');
 
-    if (cachedOpenid && cachedRole) {
-      console.log('从缓存恢复登录状态');
-      app.globalData.openid = cachedOpenid;
-      app.globalData.role = cachedRole;
-      wx.redirectTo({
-        url: '/pages/home/index'
-      });
-      return;
+      // 检查缓存是否过期（TC-LOGIN-004）
+      if (expire && Date.now() > expire) {
+        console.log('[登录检查] 登录缓存已过期，清除缓存数据');
+        wx.clearStorageSync();
+        wx.showToast({
+          title: '登录已过期，请重新登录',
+          icon: 'none',
+          duration: 2000
+        });
+        return;
+      }
+
+      // 缓存有效且存在登录信息（TC-LOGIN-003）
+      if (cachedOpenid && cachedRole && expire) {
+        console.log('[登录检查] 从缓存恢复登录状态');
+        app.globalData.openid = cachedOpenid;
+        app.globalData.role = cachedRole;
+        wx.redirectTo({
+          url: '/pages/home/index'
+        });
+        return;
+      }
+
+      console.log('[登录检查] 缓存无效或不完整，需要重新登录');
+    } catch (err) {
+      console.error('[登录检查] 读取缓存失败:', err);
+      wx.clearStorageSync();
     }
   },
 
@@ -57,11 +79,13 @@ Page({
   /**
    * 微信授权登录按钮点击事件
    * @param {object} e - 事件对象，包含用户信息
+   * 改进：增强错误处理和日志记录（TC-LOGIN-001, TC-LOGIN-002, TC-LOGIN-005）
    */
   handleGetUserInfo: function (e) {
-    // 检查用户是否授权
+    // 检查用户是否授权（TC-LOGIN-002）
     if (e.detail.errMsg !== 'getUserInfo:ok') {
       // 用户取消授权
+      console.log('[授权登录] 用户拒绝授权');
       wx.showToast({
         title: '需要授权才能继续使用',
         icon: 'none',
@@ -70,28 +94,29 @@ Page({
       return;
     }
 
-    console.log('用户授权成功，开始登录流程');
+    console.log('[授权登录] 用户授权成功，开始登录流程');
 
     // 显示加载状态
     this.setData({ loading: true });
 
-    // 第一步：调用 wx.login 获取微信登录凭证（code）
+    // 第一步：调用 wx.login 获取微信登录凭证（code）（TC-LOGIN-005）
     wx.login({
       success: (loginRes) => {
         // 检查 code 是否获取成功
         if (!loginRes.code) {
+          console.error('[授权登录] 获取登录凭证失败');
           this.showError('获取登录凭证失败，请重试');
           return;
         }
 
-        console.log('获取到 code：', loginRes.code);
+        console.log('[授权登录] 获取到 code，准备调用云函数');
 
         // 第二步：调用云函数 getUserRole，传入 code 获取用户信息和角色
         this.doLogin(loginRes.code);
       },
       fail: (err) => {
-        console.error('wx.login 失败：', err);
-        this.showError('微信登录失败，请检查网络');
+        console.error('[授权登录] wx.login 失败：', err);
+        this.showError('微信登录失败，请检查网络连接');
       }
     });
   },
@@ -99,34 +124,43 @@ Page({
   /**
    * 调用云函数完成登录
    * @param {string} code - 微信登录凭证
+   * 改进：增强错误处理和角色识别（TC-LOGIN-006, TC-LOGIN-008）
    */
   doLogin: function (code) {
     request.callCloud('getUserRole', { code: code })
       .then((res) => {
-        console.log('getUserRole 返回结果：', res);
+        console.log('[云函数调用] getUserRole 返回结果：', res);
 
-        // 检查返回结果
+        // 检查返回结果（TC-LOGIN-006）
         if (!res || !res.success) {
-          // 替换可选链为显式判断
-          this.showError((res && res.error) ? res.error : '登录失败，请重试');
+          const errorMsg = (res && res.error) ? res.error : '登录失败，请重试';
+          console.error('[云函数调用] 登录失败：', errorMsg);
+          this.showError(errorMsg);
           return;
         }
 
-        // 获取用户数据
+        // 获取用户数据（TC-LOGIN-008）
         const userData = res.data;
         const openid = userData.openid;
         const role = userData.role || 'viewer';
 
-        // 第三步：保存用户信息到全局数据
+        console.log('[登录成功] openid:', openid, 'role:', role);
+
+        // 第三步：保存用户信息到全局数据（TC-LOGIN-001）
         app.globalData.openid = openid;
         app.globalData.role = role;
 
         const expireTime = Date.now() + 7 * 24 * 60 * 60 * 1000;  // 7天后过期
 
         // 第四步：保存到本地缓存（实现下次打开免登录）
-        wx.setStorageSync('openid', openid);
-        wx.setStorageSync('role', role);
-        wx.setStorageSync('loginExpire', expireTime);
+        try {
+          wx.setStorageSync('openid', openid);
+          wx.setStorageSync('role', role);
+          wx.setStorageSync('loginExpire', expireTime);
+          console.log('[登录成功] 登录信息已保存到缓存，有效期7天');
+        } catch (err) {
+          console.error('[登录成功] 保存缓存失败：', err);
+        }
 
         // 显示登录成功提示
         wx.showToast({
@@ -145,7 +179,7 @@ Page({
 
       })
       .catch((err) => {
-        console.error('登录失败：', err);
+        console.error('[云函数调用] 登录失败（网络或服务器错误）：', err);
         this.showError('服务器错误，请稍后重试');
       });
   },
