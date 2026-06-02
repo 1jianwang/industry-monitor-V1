@@ -50,26 +50,27 @@ App({
   /**
    * 从本地缓存恢复登录状态
    * 检查缓存是否有登录信息，若有则恢复到 globalData
+   * TC-LOGIN-003: 缓存有效期内自动恢复登录
+   * TC-LOGIN-004: 缓存过期时清除数据
    */
   restoreLoginState: function () {
     try {
       const expire = wx.getStorageSync('loginExpire');
-      const isExpired = !expire || Date.now() > expire;
+      const cachedOpenid = wx.getStorageSync('openid');
+      const cachedRole = wx.getStorageSync('role');
 
-      if (isExpired) {
-        // 缓存过期，清除登录状态，下次打开重新登录
-        console.log('登录缓存已过期，清除登录状态');
+      // TC-LOGIN-004: 检查缓存是否过期（超过7天）
+      if (expire && Date.now() > expire) {
+        console.log('登录缓存已过期，请重新登录状态');
+        // 清除所有本地缓存
         wx.clearStorageSync();
         return;
       }
 
-      // 读取本地缓存的登录信息
-      const cachedOpenid = wx.getStorageSync('openid');
-      const cachedRole = wx.getStorageSync('role');
-
-      // 如果缓存存在，恢复到全局数据
-      if (cachedOpenid && cachedRole) {
-        console.log('从缓存恢复登录状态：', cachedOpenid, cachedRole);
+      // TC-LOGIN-003: 缓存有效期内（7天内）自动恢复登录状态
+      if (cachedOpenid && cachedRole && expire) {
+        console.log('[TC-LOGIN-003] 从缓存恢复登录状态，直接进入首页');
+        console.log('用户信息 - openid:', cachedOpenid, 'role:', cachedRole);
         this.globalData.openid = cachedOpenid;
         this.globalData.role = cachedRole;
       } else {
@@ -77,6 +78,8 @@ App({
       }
     } catch (err) {
       console.error('读取缓存失败：', err);
+      // 缓存读取失败时清除所有数据
+      wx.clearStorageSync();
     }
   },
 

@@ -49,14 +49,14 @@
     </view>
   </view>
 
-  <!-- 登录按钮区域 - 保留原有逻辑 -->
+  <!-- 登录按钮区域 - 使用新版登录方式 -->
   <view class="button-container">
     <button
       class="login-btn"
-      open-type="getUserInfo"
-      bindgetuserinfo="handleGetUserInfo"
+      bindtap="handleLogin"
+      loading="{{loading}}"
     >
-      微信授权登录
+      {{loading ? '登录中...' : '微信授权登录'}}
     </button>
   </view>
 
