@@ -95,6 +95,19 @@
 
 ---
 
+## 📋 测试用例截图
+
+<p align="center">
+  <img src="screenshots/test-case-1.png" alt="测试用例图1" width="45%" style="margin: 10px;" />
+  <img src="screenshots/test-case-2.png" alt="测试用例图2" width="45%" style="margin: 10px;" />
+</p>
+
+<p align="center">
+  <sub>完整测试用例请查看：<a href="./测试用例文档.md">测试用例文档.md</a></sub>
+</p>
+
+---
+
 ## 🛠️ 技术栈
 
 ### 前端
