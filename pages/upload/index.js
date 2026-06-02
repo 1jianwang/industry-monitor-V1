@@ -253,7 +253,6 @@ Page({
 
   /**
    * 页面显示时执行
-   * 已修复：TC03 - 每次页面显示时重新从云端验证角色，不依赖缓存
    */
   onShow: function () {
     // 每次显示时都检查权限
@@ -264,12 +263,12 @@ Page({
       return;
     }
 
-    // 已修复：TC03 - 重新验证角色，防止管理员降权后仍可访问
+    // 重新验证角色，防止管理员降权后仍可访问
     this.verifyAdminRole();
   },
 
   /**
-   * 已修复：TC03 - 验证管理员角色（从云端获取最新角色）
+   * 验证管理员角色（从云端获取最新角色）
    */
   verifyAdminRole: function () {
     request.callCloud('getUserRole', {})
@@ -465,7 +464,7 @@ Page({
   },
 
   /**
-   * 已修复：TC14 - 净化函数：移除云存储路径不支持的特殊字符
+   * 净化函数：移除云存储路径不支持的特殊字符
    */
   sanitizeForPath: function (str) {
     return String(str)
@@ -546,7 +545,7 @@ Page({
     // ==========================================
     // 第二步：上传文件到云存储
     // ==========================================
-    // 已修复：TC14 - 使用净化后的名称构建云存储路径
+    // 使用净化后的名称构建云存储路径
     const safeName = this.sanitizeForPath(industryName);
     const safePeriod = this.sanitizeForPath(timePeriod);
     let safeFileName = file.name.replace(/[\/\\:*?"<>|]/g, '_');

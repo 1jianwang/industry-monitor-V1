@@ -1,6 +1,5 @@
 /**
  * 云函数调用封装
- * 已修复：TC43 - 添加超时控制
  * @param {string} name - 云函数名称
  * @param {object} data - 传递给云函数的数据
  * @param {number} timeout - 超时时间（毫秒），默认30秒

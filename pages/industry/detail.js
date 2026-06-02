@@ -55,7 +55,7 @@ Page({
     mineralChartTitle: '矿产储量分布',  // 矿产图表标题（动态）
     // 导出PDF相关
     exporting: false,  // 导出中状态
-    // 已修复：TC27 - 图表实例存储，用于页面卸载时销毁
+    // 图表实例存储，用于页面卸载时销毁
     chartInstances: {}
   },
 
@@ -296,7 +296,7 @@ Page({
   },
 
   getCurrentList: function(dataMap, moduleName, level) {
-    // 已修复：TC41 - 替换可选链为显式判断
+    // 替换可选链为显式判断
     return (dataMap && dataMap[moduleName] && dataMap[moduleName][level]) ? dataMap[moduleName][level] : [];
   },
 
@@ -640,7 +640,7 @@ Page({
           console.log('echarts对象:', echarts);
           console.log('echarts版本:', echarts.version);
 
-          // 已修复：TC27 - 销毁旧的图表实例，避免内存泄漏
+          // 销毁旧的图表实例，避免内存泄漏
           if (this.chartInstances.market) {
             try {
               this.chartInstances.market.dispose();
@@ -656,7 +656,7 @@ Page({
             devicePixelRatio: dpr
           });
 
-          // 已修复：TC27 - 保存图表实例引用（存储到页面实例属性，不放在 data 中）
+          // 保存图表实例引用
           this.chartInstances.market = chart;
 
           // 设置动态标题
@@ -759,7 +759,6 @@ Page({
 
   /**
    * 初始化龙头企业柱状图
-   * 已修复：TC25 - 限制最多显示10家企业，避免图表拥挤
    */
   initEnterpriseChart: function () {
     const { allData, currentColumn } = this.data;
@@ -800,7 +799,7 @@ Page({
       revenues.push(revenue);
     });
 
-    // 已修复：TC25 - 限制最多显示10家企业
+    // 限制最多显示10家企业
     const limitedEnterprises = enterprises.slice(0, 10);
     const limitedRevenues = revenues.slice(0, 10);
 
@@ -818,7 +817,7 @@ Page({
         onInit: (canvas, width, height, dpr) => {
           const echarts = require('../../ec-canvas/echarts.min');
 
-          // 已修复：TC27 - 销毁旧的图表实例
+          // 销毁旧的图表实例
           if (this.chartInstances.enterprise) {
             try {
               this.chartInstances.enterprise.dispose();
@@ -833,7 +832,7 @@ Page({
             devicePixelRatio: dpr
           });
 
-          // 已修复：TC27 - 保存图表实例引用（存储到页面实例属性，不放在 data 中）
+          // 保存图表实例引用
           this.chartInstances.enterprise = chart;
 
           // 设置动态标题
@@ -1130,7 +1129,7 @@ Page({
   },
 
   /**
-   * 已修复：TC27 - 页面卸载时销毁所有图表实例，避免内存泄漏
+   * 页面卸载时销毁所有图表实例，避免内存泄漏
    */
   onUnload: function() {
     console.log('页面卸载，开始销毁图表实例');

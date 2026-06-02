@@ -167,13 +167,13 @@ exports.main = async (event, context) => {
       const downloadRes = await cloud.downloadFile({ fileID: fileID });
       fileBuffer = downloadRes.fileContent;
 
-      // 已修复：TC08 - 校验文件内容不为空
+      // 校验文件内容不为空
       if (!fileBuffer || fileBuffer.length === 0) {
         await updateUploadStatus(db, uploadId, 'failed', '文件内容为空，请检查文件是否损坏');
         return { success: false, error: '文件内容为空，请检查文件是否损坏' };
       }
 
-      // 已修复：TC08 - 校验文件头是否为合法 xlsx 格式（xlsx 文件头为 PK\x03\x04，即 504b0304）
+      // 校验文件头是否为合法 xlsx 格式（xlsx 文件头为 PK\x03\x04，即 504b0304）
       const header = fileBuffer.slice(0, 4).toString('hex');
       if (header !== '504b0304') {
         await updateUploadStatus(db, uploadId, 'failed', '文件格式不合法，请上传真实的xlsx文件');
@@ -297,7 +297,6 @@ exports.main = async (event, context) => {
 
     // ==========================================
     // 第五步：批量写入数据库
-    // 已修复：TC10 - 使用软删除机制，避免删除和写入非原子操作导致数据丢失
     // ==========================================
     console.log('开始写入数据库，总记录数:', allRecords.length);
 

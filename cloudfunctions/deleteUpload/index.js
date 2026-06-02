@@ -45,7 +45,6 @@ exports.main = async (event, context) => {
 
   try {
     // ==========================================
-    // 已修复：TC29 - 调整删除顺序，优先删除数据库，最后删除云存储
     // 第一步：先查询获取文件路径
     // ==========================================
     const uploadRes = await db.collection('uploads').doc(uploadId).get()

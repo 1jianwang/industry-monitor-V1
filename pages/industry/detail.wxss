@@ -184,7 +184,7 @@
   color: #333;
   line-height: 1.6;
   word-break: break-all;
-  /* 已修复：TC23 - 超长文本截断，避免布局撑破 */
+  /* 超长文本截断，避免布局撑破 */
   max-height: 400rpx;
   overflow: hidden;
   text-overflow: ellipsis;

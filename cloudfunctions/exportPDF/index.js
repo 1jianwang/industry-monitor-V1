@@ -8,7 +8,7 @@ const path = require('path')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 /**
- * 已修复：TC36 - 净化函数：移除云存储路径不支持的特殊字符
+ * 净化函数：移除云存储路径不支持的特殊字符
  */
 function sanitizeForPath(str) {
   return String(str)
@@ -18,7 +18,7 @@ function sanitizeForPath(str) {
 }
 
 /**
- * 已修复：TC38 - 清理旧PDF文件，避免无限积累
+ * 清理旧PDF文件，避免无限积累
  */
 async function cleanOldPDF(db, cloud, industryName, timePeriod) {
   try {
@@ -59,13 +59,12 @@ exports.main = async (event, context) => {
   try {
     // ==========================================
     // 第一步：并行执行权限校验和数据查询（优化性能）
-    // 已修复：TC38 - 同时清理旧PDF文件
     // ==========================================
     console.log('[PDF导出] 步骤1: 并行查询用户、数据和清理旧PDF')
     const [userRes, dataRes] = await Promise.all([
       db.collection('users').where({ openid: OPENID }).limit(1).get(),
       db.collection('industry_data').where({ industryName, timePeriod }).limit(100).get(),
-      cleanOldPDF(db, cloud, industryName, timePeriod)  // 已修复：TC38 - 清理旧PDF
+      cleanOldPDF(db, cloud, industryName, timePeriod)
     ])
 
     console.log(`[PDF导出] 查询完成, 耗时=${Date.now() - startTime}ms`)
@@ -201,7 +200,6 @@ exports.main = async (event, context) => {
         })))
 
         // 数据行（交替浅色背景）
-        // 已修复：TC34 - 数字0显示为空白问题，使用明确的null/undefined判断
         limitedItems.forEach((item, idx) => {
           tableBody.push(headers.map(h => ({
             text: (item[h] === null || item[h] === undefined) ? '' : String(item[h]),
@@ -348,7 +346,7 @@ exports.main = async (event, context) => {
     // 第五步：并行上传和获取临时链接
     // ==========================================
     const timestamp = Date.now()
-    // 已修复：TC36 - 使用净化后的名称构建云存储路径
+    // 使用净化后的名称构建云存储路径
     const safeName = sanitizeForPath(industryName)
     const safePeriod = sanitizeForPath(timePeriod)
     const fileName = `reports/${safeName}_${safePeriod}_${timestamp}.pdf`
@@ -366,7 +364,7 @@ exports.main = async (event, context) => {
 
     console.log(`[PDF导出] 完成, 总耗时=${Date.now() - startTime}ms`)
 
-    // 已修复：TC38 - 记录PDF文件信息到数据库
+    // 记录PDF文件信息到数据库
     try {
       await db.collection('pdf_records').add({
         data: {

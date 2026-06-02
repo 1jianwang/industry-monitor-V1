@@ -87,7 +87,6 @@ async function countUniqueItems(db, moduleName, level, nameField) {
 }
 
 /**
- * 已修复：TC17 - 分页查询所有产业，避免默认20条限制
  * 分页获取所有产业记录
  */
 async function getAllIndustries(db, query) {
@@ -118,7 +117,7 @@ async function getAllIndustries(db, query) {
 exports.main = async (event, context) => {
   try {
     // ==========================================
-    // 第一步：查询所有产业（已修复：TC17 - 使用分页查询）
+    // 第一步：查询所有产业
     // ==========================================
     let query = db.collection('industries');
 
@@ -134,7 +133,7 @@ exports.main = async (event, context) => {
     console.log('查询到产业数量:', industries.length);
 
     // ==========================================
-    // 第二步：为每个产业查询所有已上传的季度列表（已修复：TC17 - 使用分页查询）
+    // 第二步：为每个产业查询所有已上传的季度列表
     // ==========================================
     const result = [];
 

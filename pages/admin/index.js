@@ -24,7 +24,6 @@ Page({
    * 1. 检查登录状态
    * 2. 检查管理员权限
    * 3. 加载数据
-   * 已修复：TC11 - 自动清理僵尸记录
    */
   onLoad: function (options) {
     // 检查登录状态
@@ -41,7 +40,7 @@ Page({
       return // 无权限，checkAdminPermission 已处理跳转
     }
 
-    // 已修复：TC11 - 自动清理僵尸记录
+    // 自动清理僵尸记录
     this.cleanPendingUploads()
 
     // 加载数据
@@ -50,7 +49,7 @@ Page({
   },
 
   /**
-   * 已修复：TC11 - 清理僵尸上传记录
+   * 清理僵尸上传记录
    */
   cleanPendingUploads: function() {
     wx.cloud.callFunction({

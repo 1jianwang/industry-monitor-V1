@@ -1,5 +1,4 @@
 // cloudfunctions/cleanPendingUploads/index.js
-// 已修复：TC11 - 定期清理超过30分钟仍为 pending 的僵尸记录
 
 const cloud = require('wx-server-sdk')
 

@@ -107,7 +107,7 @@ Page({
 
         // 检查返回结果
         if (!res || !res.success) {
-          // 已修复：TC41 - 替换可选链为显式判断
+          // 替换可选链为显式判断
           this.showError((res && res.error) ? res.error : '登录失败，请重试');
           return;
         }
