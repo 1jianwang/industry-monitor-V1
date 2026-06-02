@@ -1,5 +1,39 @@
+# Dependencies
 node_modules/
 miniprogram_npm/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+
+# IDE
 .DS_Store
+.vscode/
+.idea/
+
+# Logs
 *.log
+npm-debug.log*
+
+# WeChat MiniProgram
 project.private.config.json
+
+# Test files
+test-data/
+test-scripts/
+*.test.js
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Documentation (temporary)
+修复*.md
+最终*.md
+*报告.md
+*指南.md
