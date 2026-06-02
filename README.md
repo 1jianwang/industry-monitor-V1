@@ -202,6 +202,14 @@ industry-monitor-V1/
    - 点击"编译"按钮
    - 使用微信扫码预览
 
+### 📱 小程序体验
+
+<p align="center">
+  <img src="screenshots/qrcode.png" alt="小程序二维码" width="200" />
+  <br />
+  <sub>扫码体验小程序</sub>
+</p>
+
 ---
 
 ## 👥 用户角色
